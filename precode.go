@@ -52,7 +52,11 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	// записываем сериализованные в JSON данные в тело ответа
-	w.Write(resp)
+	_, err = w.Write(resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func getTask(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +76,12 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(resp)
+
+	_, err = w.Write(resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 }
 
 func postTask(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +98,12 @@ func postTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	tasks[task.ID] = task
+
+	_, ok := tasks[task.ID]
+	// если нет задачи с таким ID - создаем новую
+	if !ok {
+		tasks[task.ID] = task
+	}
 
 	defer r.Body.Close()
 
@@ -102,7 +116,7 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 
 	_, ok := tasks[id]
 	if !ok {
-		http.Error(w, "ключ не найден", http.StatusBadRequest)
+		http.Error(w, "задача не найдена", http.StatusBadRequest)
 		return
 	}
 	delete(tasks, id)
