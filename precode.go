@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -70,6 +71,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := json.Marshal(task)
 	if err != nil {
+		log.Printf("ошибка при маршалинге таски: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -79,7 +81,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 
 	_, err = w.Write(resp)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Printf("Ошибка при записи ответа: %v", err)
 		return
 	}
 }
@@ -103,6 +105,9 @@ func postTask(w http.ResponseWriter, r *http.Request) {
 	// если нет задачи с таким ID - создаем новую
 	if !ok {
 		tasks[task.ID] = task
+	} else {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	defer r.Body.Close()
