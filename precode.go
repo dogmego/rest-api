@@ -55,7 +55,7 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 	// записываем сериализованные в JSON данные в тело ответа
 	_, err = w.Write(resp)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("ошибка при маршалинге таски: %v", err)
 		return
 	}
 }
@@ -106,7 +106,7 @@ func postTask(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		tasks[task.ID] = task
 	} else {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "задача уже существует", http.StatusBadRequest)
 		return
 	}
 
